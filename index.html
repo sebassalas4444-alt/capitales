@@ -1,387 +1,420 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Gamepad2, MapPin, CheckCircle2, XCircle, ArrowRight, RotateCcw, Home, Trophy, Search } from 'lucide-react';
-
-// --- DATOS DE COLOMBIA ---
-const DEPARTMENTS = [
-  { id: 1, department: "Amazonas", capital: "Leticia" },
-  { id: 2, department: "Antioquia", capital: "Medellín" },
-  { id: 3, department: "Arauca", capital: "Arauca" },
-  { id: 4, department: "Atlántico", capital: "Barranquilla" },
-  { id: 5, department: "Bolívar", capital: "Cartagena de Indias" },
-  { id: 6, department: "Boyacá", capital: "Tunja" },
-  { id: 7, department: "Caldas", capital: "Manizales" },
-  { id: 8, department: "Caquetá", capital: "Florencia" },
-  { id: 9, department: "Casanare", capital: "Yopal" },
-  { id: 10, department: "Cauca", capital: "Popayán" },
-  { id: 11, department: "Cesar", capital: "Valledupar" },
-  { id: 12, department: "Chocó", capital: "Quibdó" },
-  { id: 13, department: "Córdoba", capital: "Montería" },
-  { id: 14, department: "Cundinamarca", capital: "Bogotá" },
-  { id: 15, department: "Guainía", capital: "Inírida" },
-  { id: 16, department: "Guaviare", capital: "San José del Guaviare" },
-  { id: 17, department: "Huila", capital: "Neiva" },
-  { id: 18, department: "La Guajira", capital: "Riohacha" },
-  { id: 19, department: "Magdalena", capital: "Santa Marta" },
-  { id: 20, department: "Meta", capital: "Villavicencio" },
-  { id: 21, department: "Nariño", capital: "Pasto" },
-  { id: 22, department: "Norte de Santander", capital: "Cúcuta" },
-  { id: 23, department: "Putumayo", capital: "Mocoa" },
-  { id: 24, department: "Quindío", capital: "Armenia" },
-  { id: 25, department: "Risaralda", capital: "Pereira" },
-  { id: 26, department: "San Andrés y Providencia", capital: "San Andrés" },
-  { id: 27, department: "Santander", capital: "Bucaramanga" },
-  { id: 28, department: "Sucre", capital: "Sincelejo" },
-  { id: 29, department: "Tolima", capital: "Ibagué" },
-  { id: 30, department: "Valle del Cauca", capital: "Cali" },
-  { id: 31, department: "Vaupés", capital: "Mitú" },
-  { id: 32, department: "Vichada", capital: "Puerto Carreño" }
-];
-
-// --- FUNCIONES AUXILIARES ---
-const shuffleArray = (array) => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
-
-// --- COMPONENTES ---
-
-// 1. Tarjetas Didácticas (Modo Estudio)
-const Flashcards = ({ onBack }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [flippedCards, setFlippedCards] = useState({});
-
-  const filteredDepts = DEPARTMENTS.filter(d => 
-    d.department.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    d.capital.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const toggleFlip = (id) => {
-    setFlippedCards(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  return (
-    <div className="w-full max-w-4xl mx-auto p-4 animate-in fade-in zoom-in duration-300">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200"
-        >
-          <Home className="w-5 h-5" /> Volver al Inicio
-        </button>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Buscar..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
-          />
-        </div>
-      </div>
-
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800 flex items-center justify-center gap-3">
-          <BookOpen className="w-8 h-8 text-blue-600" />
-          Modo Estudio
-        </h2>
-        <p className="text-slate-600 mt-2">Toca cualquier tarjeta para revelar la respuesta.</p>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredDepts.map((item) => (
-          <div 
-            key={item.id} 
-            onClick={() => toggleFlip(item.id)}
-            className={`cursor-pointer h-32 relative [perspective:1000px] group`}
-          >
-            <div className={`w-full h-full absolute transition-all duration-500 [transform-style:preserve-3d] ${flippedCards[item.id] ? '[transform:rotateY(180deg)]' : ''}`}>
-              
-              {/* Frente de la tarjeta (Departamento) */}
-              <div className="absolute w-full h-full backface-hidden [backface-visibility:hidden] bg-white rounded-xl shadow-md border-b-4 border-yellow-400 flex flex-col items-center justify-center p-4 hover:shadow-lg transition-shadow">
-                <MapPin className="w-6 h-6 text-yellow-500 mb-2" />
-                <span className="text-center font-semibold text-slate-800 leading-tight">{item.department}</span>
-              </div>
-              
-              {/* Dorso de la tarjeta (Capital) */}
-              <div className="absolute w-full h-full backface-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-blue-50 rounded-xl shadow-md border-b-4 border-blue-500 flex flex-col items-center justify-center p-4">
-                <span className="text-xs text-blue-500 font-bold uppercase tracking-wider mb-1">Capital</span>
-                <span className="text-center font-bold text-blue-900 text-lg leading-tight">{item.capital}</span>
-              </div>
-
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// 2. Modo Juego (Quiz)
-const Quiz = ({ mode, onBack }) => {
-  // mode: 'guessCapital' o 'guessDept'
-  const [questions, setQuestions] = useState([]);
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [isFinished, setIsFinished] = useState(false);
-
-  // Generar preguntas al iniciar
-  useEffect(() => {
-    generateQuestions();
-  }, [mode]);
-
-  const generateQuestions = () => {
-    const NUM_QUESTIONS = 10;
-    const shuffledDepts = shuffleArray(DEPARTMENTS).slice(0, NUM_QUESTIONS);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geografía de Colombia</title>
     
-    const newQuestions = shuffledDepts.map(correctItem => {
-      // Elegir 3 opciones incorrectas
-      let wrongOptions = DEPARTMENTS.filter(d => d.id !== correctItem.id);
-      wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
-      
-      const allOptions = shuffleArray([correctItem, ...wrongOptions]);
-      
-      return {
-        correctItem,
-        options: allOptions
-      };
-    });
-
-    setQuestions(newQuestions);
-    setCurrentQIndex(0);
-    setScore(0);
-    setSelectedOption(null);
-    setIsFinished(false);
-  };
-
-  const handleSelectOption = (option) => {
-    if (selectedOption !== null) return; // Evitar multiples clicks
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    setSelectedOption(option);
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    const currentQ = questions[currentQIndex];
-    if (option.id === currentQ.correctItem.id) {
-      setScore(score + 1);
-    }
-  };
+    <!-- Babel (para que el navegador entienda JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  const handleNextQuestion = () => {
-    if (currentQIndex + 1 < questions.length) {
-      setCurrentQIndex(currentQIndex + 1);
-      setSelectedOption(null);
-    } else {
-      setIsFinished(true);
-    }
-  };
+    <style>
+        /* Clases auxiliares para el efecto 3D de las tarjetas */
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-  if (questions.length === 0) return <div className="text-center p-10">Cargando...</div>;
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  const currentQ = questions[currentQIndex];
-  
-  // Textos según el modo
-  const questionTitle = mode === 'guessCapital' 
-    ? "¿Cuál es la capital de...?"
-    : "¿A qué departamento pertenece la capital...?";
-    
-  const questionHighlight = mode === 'guessCapital'
-    ? currentQ.correctItem.department
-    : currentQ.correctItem.capital;
+        // --- ICONOS (Reemplazo de lucide-react para un solo archivo) ---
+        const IconHome = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+        const IconSearch = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        const IconBookOpen = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const IconMapPin = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        const IconGamepad2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg>;
+        const IconCheckCircle2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
+        const IconXCircle = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
+        const IconArrowRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
+        const IconRotateCcw = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+        const IconTrophy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
 
-  const getOptionText = (opt) => mode === 'guessCapital' ? opt.capital : opt.department;
+        // --- DATOS DE COLOMBIA ---
+        const DEPARTMENTS = [
+            { id: 1, department: "Amazonas", capital: "Leticia" },
+            { id: 2, department: "Antioquia", capital: "Medellín" },
+            { id: 3, department: "Arauca", capital: "Arauca" },
+            { id: 4, department: "Atlántico", capital: "Barranquilla" },
+            { id: 5, department: "Bolívar", capital: "Cartagena de Indias" },
+            { id: 6, department: "Boyacá", capital: "Tunja" },
+            { id: 7, department: "Caldas", capital: "Manizales" },
+            { id: 8, department: "Caquetá", capital: "Florencia" },
+            { id: 9, department: "Casanare", capital: "Yopal" },
+            { id: 10, department: "Cauca", capital: "Popayán" },
+            { id: 11, department: "Cesar", capital: "Valledupar" },
+            { id: 12, department: "Chocó", capital: "Quibdó" },
+            { id: 13, department: "Córdoba", capital: "Montería" },
+            { id: 14, department: "Cundinamarca", capital: "Bogotá" },
+            { id: 15, department: "Guainía", capital: "Inírida" },
+            { id: 16, department: "Guaviare", capital: "San José del Guaviare" },
+            { id: 17, department: "Huila", capital: "Neiva" },
+            { id: 18, department: "La Guajira", capital: "Riohacha" },
+            { id: 19, department: "Magdalena", capital: "Santa Marta" },
+            { id: 20, department: "Meta", capital: "Villavicencio" },
+            { id: 21, department: "Nariño", capital: "Pasto" },
+            { id: 22, department: "Norte de Santander", capital: "Cúcuta" },
+            { id: 23, department: "Putumayo", capital: "Mocoa" },
+            { id: 24, department: "Quindío", capital: "Armenia" },
+            { id: 25, department: "Risaralda", capital: "Pereira" },
+            { id: 26, department: "San Andrés y Providencia", capital: "San Andrés" },
+            { id: 27, department: "Santander", capital: "Bucaramanga" },
+            { id: 28, department: "Sucre", capital: "Sincelejo" },
+            { id: 29, department: "Tolima", capital: "Ibagué" },
+            { id: 30, department: "Valle del Cauca", capital: "Cali" },
+            { id: 31, department: "Vaupés", capital: "Mitú" },
+            { id: 32, department: "Vichada", capital: "Puerto Carreño" }
+        ];
 
-  return (
-    <div className="w-full max-w-2xl mx-auto p-4 animate-in slide-in-from-bottom-8 duration-500">
-      
-      <div className="flex justify-between items-center mb-6">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          <Home className="w-5 h-5" /> Salir
-        </button>
-        <div className="bg-white px-4 py-1.5 rounded-full shadow-sm font-semibold text-slate-700 border border-slate-200">
-          Pregunta {currentQIndex + 1} de {questions.length}
-        </div>
-      </div>
+        // --- FUNCIONES AUXILIARES ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
 
-      {!isFinished ? (
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-          {/* Cabecera de pregunta */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-center text-white relative">
-            <div className="absolute top-0 left-0 w-full h-2 flex">
-              <div className="bg-yellow-400 h-full w-1/2"></div>
-              <div className="bg-red-600 h-full w-1/2"></div>
-            </div>
-            <p className="text-blue-100 font-medium tracking-wide uppercase mb-2 text-sm">{questionTitle}</p>
-            <h2 className="text-4xl font-bold">{questionHighlight}</h2>
-          </div>
+        // --- COMPONENTES ---
 
-          {/* Opciones */}
-          <div className="p-6 md:p-8">
-            <div className="grid grid-cols-1 gap-3">
-              {currentQ.options.map((opt, index) => {
-                const isSelected = selectedOption?.id === opt.id;
-                const isCorrect = opt.id === currentQ.correctItem.id;
+        // 1. Tarjetas Didácticas (Modo Estudio)
+        const Flashcards = ({ onBack }) => {
+            const [searchTerm, setSearchTerm] = useState('');
+            const [flippedCards, setFlippedCards] = useState({});
+
+            const filteredDepts = DEPARTMENTS.filter(d => 
+                d.department.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                d.capital.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const toggleFlip = (id) => {
+                setFlippedCards(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            return (
+                <div className="w-full max-w-4xl mx-auto p-4 transition-all duration-300">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <button 
+                            onClick={onBack}
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200"
+                        >
+                            <IconHome className="w-5 h-5" /> Volver al Inicio
+                        </button>
+                        <div className="relative w-full md:w-64">
+                            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input 
+                                type="text" 
+                                placeholder="Buscar..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-slate-800 flex items-center justify-center gap-3">
+                            <IconBookOpen className="w-8 h-8 text-blue-600" />
+                            Modo Estudio
+                        </h2>
+                        <p className="text-slate-600 mt-2">Toca cualquier tarjeta para revelar la respuesta.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {filteredDepts.map((item) => (
+                            <div 
+                                key={item.id} 
+                                onClick={() => toggleFlip(item.id)}
+                                className={`cursor-pointer h-32 relative [perspective:1000px] group`}
+                            >
+                                <div className={`w-full h-full absolute transition-all duration-500 [transform-style:preserve-3d] ${flippedCards[item.id] ? '[transform:rotateY(180deg)]' : ''}`}>
+                                    
+                                    {/* Frente de la tarjeta (Departamento) */}
+                                    <div className="absolute w-full h-full backface-hidden bg-white rounded-xl shadow-md border-b-4 border-yellow-400 flex flex-col items-center justify-center p-4 hover:shadow-lg transition-shadow">
+                                        <IconMapPin className="w-6 h-6 text-yellow-500 mb-2" />
+                                        <span className="text-center font-semibold text-slate-800 leading-tight">{item.department}</span>
+                                    </div>
+                                    
+                                    {/* Dorso de la tarjeta (Capital) */}
+                                    <div className="absolute w-full h-full backface-hidden [transform:rotateY(180deg)] bg-blue-50 rounded-xl shadow-md border-b-4 border-blue-500 flex flex-col items-center justify-center p-4">
+                                        <span className="text-xs text-blue-500 font-bold uppercase tracking-wider mb-1">Capital</span>
+                                        <span className="text-center font-bold text-blue-900 text-lg leading-tight">{item.capital}</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Modo Juego (Quiz)
+        const Quiz = ({ mode, onBack }) => {
+            const [questions, setQuestions] = useState([]);
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isFinished, setIsFinished] = useState(false);
+
+            useEffect(() => {
+                generateQuestions();
+            }, [mode]);
+
+            const generateQuestions = () => {
+                const NUM_QUESTIONS = 10;
+                const shuffledDepts = shuffleArray(DEPARTMENTS).slice(0, NUM_QUESTIONS);
                 
-                let btnStyle = "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-blue-300";
+                const newQuestions = shuffledDepts.map(correctItem => {
+                    let wrongOptions = DEPARTMENTS.filter(d => d.id !== correctItem.id);
+                    wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
+                    
+                    const allOptions = shuffleArray([correctItem, ...wrongOptions]);
+                    
+                    return {
+                        correctItem,
+                        options: allOptions
+                    };
+                });
+
+                setQuestions(newQuestions);
+                setCurrentQIndex(0);
+                setScore(0);
+                setSelectedOption(null);
+                setIsFinished(false);
+            };
+
+            const handleSelectOption = (option) => {
+                if (selectedOption !== null) return; 
                 
-                if (selectedOption !== null) {
-                  if (isCorrect) {
-                    btnStyle = "bg-green-100 border-green-500 text-green-800 shadow-inner";
-                  } else if (isSelected && !isCorrect) {
-                    btnStyle = "bg-red-100 border-red-500 text-red-800";
-                  } else {
-                    btnStyle = "bg-slate-50 border-slate-100 text-slate-400 opacity-50";
-                  }
+                setSelectedOption(option);
+                
+                const currentQ = questions[currentQIndex];
+                if (option.id === currentQ.correctItem.id) {
+                    setScore(score + 1);
                 }
+            };
 
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleSelectOption(opt)}
-                    disabled={selectedOption !== null}
-                    className={`w-full p-4 rounded-xl border-2 text-lg font-medium transition-all duration-200 flex justify-between items-center ${btnStyle}`}
-                  >
-                    <span>{getOptionText(opt)}</span>
-                    {selectedOption !== null && isCorrect && <CheckCircle2 className="w-6 h-6 text-green-600" />}
-                    {selectedOption !== null && isSelected && !isCorrect && <XCircle className="w-6 h-6 text-red-600" />}
-                  </button>
-                );
-              })}
-            </div>
+            const handleNextQuestion = () => {
+                if (currentQIndex + 1 < questions.length) {
+                    setCurrentQIndex(currentQIndex + 1);
+                    setSelectedOption(null);
+                } else {
+                    setIsFinished(true);
+                }
+            };
 
-            {/* Botón Siguiente */}
-            {selectedOption !== null && (
-              <div className="mt-8 flex justify-end animate-in fade-in duration-300">
-                <button
-                  onClick={handleNextQuestion}
-                  className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm"
-                >
-                  {currentQIndex + 1 === questions.length ? "Ver Resultados" : "Siguiente Pregunta"}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        // Pantalla de Resultados
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-t-8 border-yellow-400 animate-in zoom-in duration-500">
-          <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">¡Ronda Terminada!</h2>
-          <p className="text-slate-600 mb-8">Has completado las 10 preguntas.</p>
-          
-          <div className="flex justify-center items-center mb-8">
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 w-full max-w-xs">
-              <span className="block text-sm text-slate-500 font-bold uppercase mb-1">Tu Puntuación</span>
-              <span className="text-5xl font-black text-blue-600">{score}</span>
-              <span className="text-2xl text-slate-400 font-bold">/10</span>
-            </div>
-          </div>
+            if (questions.length === 0) return <div className="text-center p-10">Cargando...</div>;
 
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button
-              onClick={generateQuestions}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors"
-            >
-              <RotateCcw className="w-5 h-5" /> Jugar de nuevo
-            </button>
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-6 rounded-xl transition-colors"
-            >
-              <Home className="w-5 h-5" /> Menú Principal
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+            const currentQ = questions[currentQIndex];
+            
+            const questionTitle = mode === 'guessCapital' 
+                ? "¿Cuál es la capital de...?"
+                : "¿A qué departamento pertenece la capital...?";
+                
+            const questionHighlight = mode === 'guessCapital'
+                ? currentQ.correctItem.department
+                : currentQ.correctItem.capital;
 
-// 3. Menú Principal
-export default function App() {
-  const [view, setView] = useState('menu'); // 'menu', 'study', 'quizCapital', 'quizDept'
+            const getOptionText = (opt) => mode === 'guessCapital' ? opt.capital : opt.department;
 
-  return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 selection:bg-yellow-200">
-      
-      {/* Header global (visible siempre) */}
-      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-center gap-3">
-          <div className="flex h-6 w-8 rounded overflow-hidden shadow-sm">
-            <div className="w-1/2 bg-yellow-400 h-full"></div>
-            <div className="w-1/4 bg-blue-600 h-full"></div>
-            <div className="w-1/4 bg-red-600 h-full"></div>
-          </div>
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Geografía <span className="text-blue-600">Colombia</span></h1>
-        </div>
-      </header>
+            return (
+                <div className="w-full max-w-2xl mx-auto p-4 transition-all duration-500">
+                    
+                    <div className="flex justify-between items-center mb-6">
+                        <button 
+                            onClick={onBack}
+                            className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors"
+                        >
+                            <IconHome className="w-5 h-5" /> Salir
+                        </button>
+                        <div className="bg-white px-4 py-1.5 rounded-full shadow-sm font-semibold text-slate-700 border border-slate-200">
+                            Pregunta {currentQIndex + 1} de {questions.length}
+                        </div>
+                    </div>
 
-      {/* Contenedor Principal */}
-      <main className="p-4 md:p-8 min-h-[calc(100vh-64px)] flex flex-col items-center">
-        
-        {view === 'menu' && (
-          <div className="w-full max-w-4xl text-center mt-8 md:mt-16 animate-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-4xl md:text-5xl font-black text-slate-800 mb-4">
-              ¡Aprende jugando!
-            </h2>
-            <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">
-              Domina los 32 departamentos de Colombia y sus capitales con nuestras herramientas interactivas. ¿Qué quieres hacer hoy?
-            </p>
+                    {!isFinished ? (
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-center text-white relative">
+                                <div className="absolute top-0 left-0 w-full h-2 flex">
+                                    <div className="bg-yellow-400 h-full w-1/2"></div>
+                                    <div className="bg-red-600 h-full w-1/2"></div>
+                                </div>
+                                <p className="text-blue-100 font-medium tracking-wide uppercase mb-2 text-sm">{questionTitle}</p>
+                                <h2 className="text-4xl font-bold">{questionHighlight}</h2>
+                            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              
-              {/* Tarjeta Modo Estudio */}
-              <button 
-                onClick={() => setView('study')}
-                className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-yellow-400 group text-left flex flex-col items-center text-center"
-              >
-                <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-8 h-8" />
+                            <div className="p-6 md:p-8">
+                                <div className="grid grid-cols-1 gap-3">
+                                    {currentQ.options.map((opt, index) => {
+                                        const isSelected = selectedOption?.id === opt.id;
+                                        const isCorrect = opt.id === currentQ.correctItem.id;
+                                        
+                                        let btnStyle = "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-blue-300";
+                                        
+                                        if (selectedOption !== null) {
+                                            if (isCorrect) {
+                                                btnStyle = "bg-green-100 border-green-500 text-green-800 shadow-inner";
+                                            } else if (isSelected && !isCorrect) {
+                                                btnStyle = "bg-red-100 border-red-500 text-red-800";
+                                            } else {
+                                                btnStyle = "bg-slate-50 border-slate-100 text-slate-400 opacity-50";
+                                            }
+                                        }
+
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleSelectOption(opt)}
+                                                disabled={selectedOption !== null}
+                                                className={`w-full p-4 rounded-xl border-2 text-lg font-medium transition-all duration-200 flex justify-between items-center ${btnStyle}`}
+                                            >
+                                                <span>{getOptionText(opt)}</span>
+                                                {selectedOption !== null && isCorrect && <IconCheckCircle2 className="w-6 h-6 text-green-600" />}
+                                                {selectedOption !== null && isSelected && !isCorrect && <IconXCircle className="w-6 h-6 text-red-600" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {selectedOption !== null && (
+                                    <div className="mt-8 flex justify-end transition-opacity duration-300">
+                                        <button
+                                            onClick={handleNextQuestion}
+                                            className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm"
+                                        >
+                                            {currentQIndex + 1 === questions.length ? "Ver Resultados" : "Siguiente Pregunta"}
+                                            <IconArrowRight className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-t-8 border-yellow-400">
+                            <IconTrophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
+                            <h2 className="text-3xl font-bold text-slate-800 mb-2">¡Ronda Terminada!</h2>
+                            <p className="text-slate-600 mb-8">Has completado las 10 preguntas.</p>
+                            
+                            <div className="flex justify-center items-center mb-8">
+                                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 w-full max-w-xs">
+                                    <span className="block text-sm text-slate-500 font-bold uppercase mb-1">Tu Puntuación</span>
+                                    <span className="text-5xl font-black text-blue-600">{score}</span>
+                                    <span className="text-2xl text-slate-400 font-bold">/10</span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                                <button
+                                    onClick={generateQuestions}
+                                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+                                >
+                                    <IconRotateCcw className="w-5 h-5" /> Jugar de nuevo
+                                </button>
+                                <button
+                                    onClick={onBack}
+                                    className="flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-6 rounded-xl transition-colors"
+                                >
+                                    <IconHome className="w-5 h-5" /> Menú Principal
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Modo Estudio</h3>
-                <p className="text-slate-500">Explora tarjetas didácticas para memorizar todos los departamentos y capitales a tu propio ritmo.</p>
-              </button>
+            );
+        };
 
-              {/* Tarjeta Quiz Capital */}
-              <button 
-                onClick={() => setView('quizCapital')}
-                className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500 group text-left flex flex-col items-center text-center"
-              >
-                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Gamepad2 className="w-8 h-8" />
+        // 3. Menú Principal
+        const App = () => {
+            const [view, setView] = useState('menu');
+
+            return (
+                <div className="min-h-screen bg-slate-100 font-sans text-slate-900 selection:bg-yellow-200">
+                    <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+                        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-center gap-3">
+                            <div className="flex h-6 w-8 rounded overflow-hidden shadow-sm">
+                                <div className="w-1/2 bg-yellow-400 h-full"></div>
+                                <div className="w-1/4 bg-blue-600 h-full"></div>
+                                <div className="w-1/4 bg-red-600 h-full"></div>
+                            </div>
+                            <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Geografía <span className="text-blue-600">Colombia</span></h1>
+                        </div>
+                    </header>
+
+                    <main className="p-4 md:p-8 min-h-[calc(100vh-64px)] flex flex-col items-center">
+                        
+                        {view === 'menu' && (
+                            <div className="w-full max-w-4xl text-center mt-8 md:mt-16">
+                                <h2 className="text-4xl md:text-5xl font-black text-slate-800 mb-4">
+                                    ¡Aprende jugando!
+                                </h2>
+                                <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">
+                                    Domina los 32 departamentos de Colombia y sus capitales con nuestras herramientas interactivas. ¿Qué quieres hacer hoy?
+                                </p>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                                    
+                                    <button 
+                                        onClick={() => setView('study')}
+                                        className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-yellow-400 group text-left flex flex-col items-center text-center"
+                                    >
+                                        <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                            <IconBookOpen className="w-8 h-8" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-800 mb-2">Modo Estudio</h3>
+                                        <p className="text-slate-500">Explora tarjetas didácticas para memorizar todos los departamentos y capitales a tu propio ritmo.</p>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => setView('quizCapital')}
+                                        className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500 group text-left flex flex-col items-center text-center"
+                                    >
+                                        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                            <IconGamepad2 className="w-8 h-8" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-800 mb-2">Adivina la Capital</h3>
+                                        <p className="text-slate-500">Te daremos un departamento y tendrás que elegir su capital correcta entre 4 opciones.</p>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => setView('quizDept')}
+                                        className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-red-500 group text-left flex flex-col items-center text-center"
+                                    >
+                                        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                            <IconMapPin className="w-8 h-8" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-800 mb-2">Adivina el Depto.</h3>
+                                        <p className="text-slate-500">Un desafío inverso: te daremos la capital y deberás identificar a qué departamento pertenece.</p>
+                                    </button>
+
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'study' && <Flashcards onBack={() => setView('menu')} />}
+                        {view === 'quizCapital' && <Quiz mode="guessCapital" onBack={() => setView('menu')} />}
+                        {view === 'quizDept' && <Quiz mode="guessDept" onBack={() => setView('menu')} />}
+
+                    </main>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Adivina la Capital</h3>
-                <p className="text-slate-500">Te daremos un departamento y tendrás que elegir su capital correcta entre 4 opciones.</p>
-              </button>
+            );
+        };
 
-              {/* Tarjeta Quiz Departamento */}
-              <button 
-                onClick={() => setView('quizDept')}
-                className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-red-500 group text-left flex flex-col items-center text-center"
-              >
-                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <MapPin className="w-8 h-8" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Adivina el Depto.</h3>
-                <p className="text-slate-500">Un desafío inverso: te daremos la capital y deberás identificar a qué departamento pertenece.</p>
-              </button>
-
-            </div>
-          </div>
-        )}
-
-        {view === 'study' && <Flashcards onBack={() => setView('menu')} />}
-        {view === 'quizCapital' && <Quiz mode="guessCapital" onBack={() => setView('menu')} />}
-        {view === 'quizDept' && <Quiz mode="guessDept" onBack={() => setView('menu')} />}
-
-      </main>
-    </div>
-  );
-}
+        // Renderizar la aplicación en el div con id "root"
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
